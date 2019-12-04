@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>地图</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<style type="text/css">
+html,body{
+    width:100%;
+    height:100%;
+}
+*{
+    margin:0px;
+    padding:0px;
+}
+body, button, input, select, textarea {
+    font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+}
+p{
+    width:603px;
+    padding-top:3px;
+    overflow:hidden;
+}
+.btn{
+    width:142px;
+}
+#container{
+    width: 100%;
+    height: 100%;
+}
+</style>
+<script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=OWYBZ-YTH3X-PIV4G-ZSWG5-KX6X7-FWFJL"></script>
+<script>
+
+var map;
+var center = new qq.maps.LatLng(30.250142,120.172168);
+var clickListener;
+var centerMaker;
+var prepareMaker;
+
+function newPrepareMaker(latLng){
+    prepareMaker = new qq.maps.Marker({position:latLng,map: map});
+    prepareMaker.setDraggable(true);
+    qq.maps.event.addListener(prepareMaker, 'click', function() {
+            info.open();
+            info.setContent('<div style="text-align:center;white-space:nowrap;'+'margin:10px;">单击标记</div>');
+            info.setPosition(center);
+        });
+};
+
+window.onload = function(){
+    //初始化地图函数  自定义函数名init
+    function init() {
+        //定义map变量 调用 qq.maps.Map() 构造函数   获取地图显示容器
+        map = new qq.maps.Map(document.getElementById("container"), {
+            center: center,                                         // 地图的中心地理坐标。
+            zoom:17                                                 // 地图的中心地理坐标。
+        });
+
+        centerMaker = new qq.maps.Marker({
+            position: center,
+            map: map
+        });
+
+        //自定义标注
+        // var anchor = new qq.maps.Point(20, 20),
+        // size = new qq.maps.Size(40, 40),
+        // origin = new qq.maps.Point(80, 0),
+        // markerIcon = new qq.maps.MarkerImage("https://vdata.amap.com/style_icon/icon-normal-big.png",size,origin,anchor);
+        // marker.setIcon(markerIcon);
+
+        // 标注点击
+        qq.maps.event.addListener(centerMaker, 'click', function() {
+            // info.open();
+            // info.setContent('<div style="text-align:center;white-space:nowrap;'+'margin:10px;">单击标记</div>');
+            // info.setPosition(center);
+        });
+
+        //获得位置：
+        clickListener = qq.maps.event.addListener(
+            map,
+            'click',
+            function(event) {
+                // map.panTo(event.latLng);
+                try {
+                    window.webkit.messageHandlers.selectedLatLng.postMessage(event.latLng.getLat()+','+event.latLng.getLng());
+                } catch (e) {
+
+                }
+
+                if (prepareMaker == null) {
+                    newPrepareMaker(event.latLng);
+                } else {
+                    prepareMaker.setPosition(event.latLng);
+                }
+            }
+        );
+    };
+    //调用初始化函数地图
+    init();
+}
+
+function changeMapCenter(lat, lng) {
+    center = new qq.maps.LatLng(lat,lng);
+    map.panTo(center);
+    centerMaker.moveTo(center, 100000000);
+    if (prepareMaker != null) {
+        prepareMaker.setMap(null);
+        prepareMaker = null;
+    }
+    
+}
+
+</script>
+</head>
+<body>
+<!--   定义地图显示容器   -->
+<div id="container"></div>
+</body>
+</html>
